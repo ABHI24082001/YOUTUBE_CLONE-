@@ -19,7 +19,7 @@ import {PublicRoutesTypes} from '~/routes';
 const {width} = Dimensions.get('screen');
 const videoMinHeight = 60;
 
-const springConfig = velocity => ({
+const springConfig = (velocity: number) => ({
   stiffness: 1000,
   damping: 500,
   mass: 3,
@@ -49,7 +49,7 @@ export default function Home() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState('fun');
 
-  const fetchYouTubeData = async query => {
+  const fetchYouTubeData = async (query: string) => {
     try {
       const response = await fetch(
         `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=300&q=${query}&type=video&key=AIzaSyAs_PXPiAbIKhcDM8LuJmRpPt56VHMrkwo`,
