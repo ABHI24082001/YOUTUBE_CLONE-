@@ -1,296 +1,68 @@
-import {Avatar, Box, HStack, Pressable, StatusBar, VStack} from 'native-base';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {Box, Button, HStack} from 'native-base';
 import React, {useCallback, useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  BackHandler,
   Dimensions,
-  FlatList,
   Image,
+  Pressable,
+  StatusBar,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import {PanGestureHandler} from 'react-native-gesture-handler';
-import YoutubePlayer from 'react-native-youtube-iframe';
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import {useSharedValue, withSpring} from 'react-native-reanimated';
+import {ListItem, Search} from '~/components';
+import VideoPlayerContainer from '~/components/VideoPlayerContainer';
 import {AppIcon} from '~/components/core';
+import {PublicRoutesTypes} from '~/routes';
 
 const {width} = Dimensions.get('screen');
 const videoMinHeight = 60;
-const videoMinWidth = 100;
 
-// Fetch YouTube data
-const fetchYouTubeData = async () => {
-  const response = await fetch(
-    'https://youtube.googleapis.com/youtube/v3/search?part=snippet&channelType=any&eventType=completed&maxResults=30&q=fun&type=video&videoType=any&key=AIzaSyDjJeurHnpol1e9q19_8aFCsDF8iWBXUQQ',
-  );
-  const data = await response.json();
-  return data.items;
-};
-
-const ListItem = ({onSelect, data}) => (
-  <FlatList
-    keyExtractor={item => item.id.videoId}
-    data={data}
-    renderItem={({item}) => (
-      <TouchableOpacity
-        key={item.id.videoId}
-        onPress={() => onSelect(item)}
-        activeOpacity={0.9}>
-        <View style={styles.videoTumbnail}>
-          <Image
-            style={styles.tumbnail}
-            source={{uri: item.snippet.thumbnails.medium.url}}
-            resizeMode="contain"
-          />
-        </View>
-        <Box p={2}>
-          <HStack alignItems={'center'} space={3}>
-            <Avatar
-              ml={2}
-              bg="green.500"
-              size={'sm'}
-              source={{uri: item.snippet.thumbnails.default.url}}
-            />
-            <VStack>
-              <Text style={styles.title}>{item.snippet.title}</Text>
-              <Text style={styles.subTitle}>{item.snippet.description}</Text>
-            </VStack>
-          </HStack>
-        </Box>
-      </TouchableOpacity>
-    )}
-  />
-);
-
-const springConfig = (velocity: number) => {
-  'worklet';
-  return {
-    stiffness: 1000,
-    damping: 500,
-    mass: 3,
-    overshootClamping: true,
-    restDisplacementThreshold: 0.01,
-    restSpeedThreshold: 0.01,
-    velocity,
-  };
-};
-
-function VideoPlayerContainer({
-  translateY,
-  movableHeight,
-  selectedItem,
-  onSelect,
-  fetching,
-  listData,
-}) {
-  const videoMaxHeight = width * 0.6;
-  const videoMaxWidth = width;
-  const initialTranslateY = useSharedValue(100);
-  const finalTranslateY = useSharedValue(0);
-  const initialOpacity = useSharedValue(0);
-
-  const animatedContainerStyles = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: interpolate(
-            translateY.value,
-            [0, movableHeight],
-            [0, movableHeight],
-          ),
-        },
-        {translateY: initialTranslateY.value},
-        {translateY: finalTranslateY.value},
-      ],
-      opacity: initialOpacity.value,
-    };
-  });
-  const animatedVideoStyles = useAnimatedStyle(() => {
-    return {
-      width: interpolate(
-        translateY.value,
-        [movableHeight - videoMinHeight, movableHeight],
-        [videoMaxWidth, videoMinWidth],
-        {
-          extrapolateLeft: Extrapolation.CLAMP,
-          extrapolateRight: Extrapolation.CLAMP,
-        },
-      ),
-      height: interpolate(
-        translateY.value,
-        [0, movableHeight - videoMinHeight, movableHeight],
-        [videoMaxHeight, videoMinHeight + videoMinHeight, videoMinHeight],
-        {
-          extrapolateLeft: Extrapolation.CLAMP,
-          extrapolateRight: Extrapolation.CLAMP,
-        },
-      ),
-    };
-  });
-  const eventHandler = useAnimatedGestureHandler({
-    onStart: (event, ctx) => {
-      ctx.startY = translateY.value;
-    },
-    onActive: (event, ctx) => {
-      let newValue = event.translationY + ctx.startY;
-      if (newValue > movableHeight) newValue = movableHeight;
-      if (newValue < 0) newValue = 0;
-      translateY.value = newValue;
-    },
-    onEnd: (evt, ctx) => {
-      if (evt.velocityY < -20 && translateY.value > 0)
-        translateY.value = withSpring(0, springConfig(evt.velocityY));
-      else if (evt.velocityY > 20 && translateY.value < movableHeight)
-        translateY.value = withSpring(
-          movableHeight,
-          springConfig(evt.velocityY),
-        );
-      else if (translateY.value < movableHeight / 2)
-        translateY.value = withSpring(0, springConfig(evt.velocityY));
-      else
-        translateY.value = withSpring(
-          movableHeight,
-          springConfig(evt.velocityY),
-        );
-    },
-  });
-
-  useEffect(() => {
-    initialTranslateY.value = withSpring(0, springConfig(20));
-    initialOpacity.value = withSpring(1, springConfig(20));
-  }, []);
-  useEffect(() => {
-    const backAction = () => {
-      if (translateY.value < movableHeight / 2) {
-        translateY.value = withSpring(movableHeight, springConfig(40));
-        return true;
-      }
-      return false;
-    };
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction,
-    );
-    return () => backHandler.remove();
-  }, [movableHeight]);
-
-  const openVideo = () => {
-    translateY.value = withSpring(0, springConfig(-20));
-  };
-  const onClose = () => {
-    finalTranslateY.value = withSpring(videoMinHeight, springConfig(-20));
-    setTimeout(() => onSelect(null), 150);
-  };
-
-  return (
-
-
-    <Animated.View style={[styles.subContainer, animatedContainerStyles]}>
-      <PanGestureHandler onGestureEvent={eventHandler}>
-        <Animated.View style={styles.fillWidth}>
-          <TouchableOpacity
-            style={styles.flexRow}
-            activeOpacity={0.9}
-            onPress={openVideo}>
-            <Animated.View style={[animatedVideoStyles]}>
-              <YoutubePlayer
-                height={300}
-                play={true}
-                videoId={selectedItem.id.videoId}
-                onChangeState={state => {
-                  if (state === 'ended') {
-                    Alert.alert('Video has finished playing!');
-                  }
-                }}
-              />
-            </Animated.View>
-            <View>
-              <Box p={2}>
-                <HStack alignItems={'center'} space={3}>
-                  <VStack>
-                    <Text style={styles.title}>
-                      {selectedItem.snippet.title}
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Box>
-            </View>
-          </TouchableOpacity>
-          <View style={styles.close}>
-            <Pressable onPress={onClose} rounded={'full'}>
-              <AppIcon AntDesignName="closecircle" size={30} color={'#000'} />
-            </Pressable>
-          </View>
-        </Animated.View>
-      </PanGestureHandler>
-      <View style={styles.selectedItemDetails}>
-        <Box
-          p={3}
-          bgColor={'#fff'}
-          borderWidth={1}
-          borderColor={'#fff'}
-          shadow={4}>
-          <HStack alignItems={'center'} justifyContent={'space-between'}>
-            <Box>
-              <HStack alignItems={'center'} space={4}>
-                <Avatar
-                  ml={2}
-                  bg="green.500"
-                  size={'sm'}
-                  source={{uri: selectedItem.snippet.thumbnails.default.url}}
-                />
-                <Text style={styles.title}>
-                  {selectedItem.snippet.channelTitle}
-                </Text>
-              </HStack>
-            </Box>
-
-            <Pressable
-              p={2}
-              py={2}
-              borderColor={'white'}
-              bgColor={'#000'}
-              rounded={'full'}>
-              <Text style={styles.sub}>Subscribe</Text>
-            </Pressable>
-          </HStack>
-        </Box>
-      </View>
-      {fetching ? (
-        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-          <ActivityIndicator size="large" />
-        </View>
-      ) : (
-        <ListItem onSelect={onSelect} data={listData} />
-      )}
-    </Animated.View>
-  );
-}
+const springConfig = velocity => ({
+  stiffness: 1000,
+  damping: 500,
+  mass: 3,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.01,
+  restSpeedThreshold: 0.01,
+  velocity,
+});
 
 export default function Home() {
+  const route = useRoute();
+  const searchTxt = React.useRef<string>('');
+  React.useEffect(() => {
+    if (route.params?.searchQuery) {
+      searchTxt.current = route.params.searchQuery;
+      fetchYouTubeData(route.params.searchQuery);
+    } else {
+      fetchYouTubeData('fun');
+    }
+  }, [route]);
+
   const [selectedItem, setSelectedVideo] = useState(null);
   const [fetching, setFetching] = useState(true);
   const containerHeight = useSharedValue(0);
   const translateY = useSharedValue(0);
   const [listData, setListData] = useState([]);
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('fun');
 
-  useEffect(() => {
-    fetchYouTubeData().then(data => {
-      setListData(data);
+  const fetchYouTubeData = async query => {
+    try {
+      const response = await fetch(
+        `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=300&q=${query}&type=video&key=AIzaSyAs_PXPiAbIKhcDM8LuJmRpPt56VHMrkwo`,
+      );
+      const data = await response.json();
+      // console.log(data.items); // Log the data to check if it's fetched correctly
+      setListData(data.items);
       setFetching(false);
-    });
-  }, []);
+    } catch (error) {
+      console.error(error);
+      setFetching(false);
+    }
+  };
 
   const onSelect = useCallback(data => {
     setSelectedVideo(data);
@@ -305,6 +77,19 @@ export default function Home() {
     },
     [containerHeight],
   );
+
+  const toggleSearchModal = () => {
+    setSearchVisible(!searchVisible);
+  };
+
+  const handleCategoryChange = query => {
+    setActiveCategory(query);
+    setFetching(true);
+    fetchYouTubeData(query);
+  };
+
+  const {navigate} =
+    useNavigation<NativeStackNavigationProp<PublicRoutesTypes>>();
 
   return (
     <View style={styles.fill}>
@@ -326,11 +111,32 @@ export default function Home() {
                 size={20}
                 color={'#000'}
               />
-              <AppIcon AntDesignName="search1" size={20} color={'#000'} />
+              <Pressable onPress={() => navigate('Search')}>
+                <AppIcon AntDesignName="search1" size={20} color={'#000'} />
+              </Pressable>
             </HStack>
           </Box>
         </HStack>
       </Box>
+
+      <Box>
+        <HStack space={2} ml={5} mb={2}>
+          {['fun', 'song', 'movies', 'bjp', 'news', 'cartoon'].map(category => (
+            <Button
+              key={category}
+              size="sm"
+              backgroundColor={activeCategory === category ? 'white' : 'black'}
+              borderColor={activeCategory === category ? 'red' : 'yellow'}
+              borderWidth={1}
+              _text={{color: activeCategory === category ? 'black' : 'white'}}
+              onPress={() => handleCategoryChange(category)}>
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </Button>
+          ))}
+        </HStack>
+      </Box>
+
+      <Search visible={searchVisible} onClose={toggleSearchModal} />
       {selectedItem && (
         <VideoPlayerContainer
           onLayout={onLayout}
@@ -348,53 +154,29 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  fill: {flex: 1},
-  fillWidth: {width: '100%'},
-  subContainer: {
-    position: 'absolute',
-    zIndex: 100,
-    width: '90%',
-    height: '90%',
+  fill: {
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  videoTumbnail: {
-    width: '100%',
-    height: 200,
-    
-  },
-  close: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    margin: 8,
-    zIndex: 99,
-    padding: 5,
-  },
-  tumbnail: {width: '100%', height: '100%'},
-  row: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#fff',
-    padding: 10,
-  },
-  title: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  subTitle: {
-    fontSize: 5,
-    color: '#555',
-  },
-  selectedItemDetails: {
-    padding: 10,
+  logo: {
+    height: 50,
+    width: 100,
   },
   sub: {
     fontSize: 15,
     color: '#fff',
     fontWeight: 'bold',
   },
-  logo: {
-    height: 50,
-    width: 100,
+  scrollViewContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  button: {
+    marginRight: 8,
+  },
+  subs: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
