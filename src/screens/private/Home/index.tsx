@@ -1,6 +1,6 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {Box, Button, HStack} from 'native-base';
+import {Box, Button, HStack, ScrollView} from 'native-base';
 import React, {useCallback, useEffect, useState} from 'react';
 import {
   Dimensions,
@@ -85,7 +85,7 @@ export default function Home() {
       setLoadingMore(true);
       try {
         const response = await fetch(
-          `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=100&q=${activeCategory}&type=video&pageToken=${nextPageToken}&key=AIzaSyAs_PXPiAbIKhcDM8LuJmRpPt56VHMrkwo`,
+          `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=100&q=${activeCategory}&type=video&pageToken=${nextPageToken}&key=AIzaSyC1EbhnoDfooWuTHDlwpw-RIKXSNCuJIK4`,
         );
         const data = await response.json();
         setListData(prevData => [...prevData, ...data.items]);
@@ -159,24 +159,28 @@ export default function Home() {
       </Box>
 
       <Box>
-        <HStack space={2} ml={5} mb={2}>
-          {['All', 'song', 'movies', 'Game', 'news', 'cartoon'].map(
-            category => (
-              <Button
-                key={category}
-                size="sm"
-                backgroundColor={
-                  activeCategory === category ? 'white' : 'black'
-                }
-                borderColor={activeCategory === category ? 'red' : 'yellow'}
-                borderWidth={1}
-                _text={{color: activeCategory === category ? 'black' : 'white'}}
-                onPress={() => handleCategoryChange(category)}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </Button>
-            ),
-          )}
-        </HStack>
+        <ScrollView horizontal={true} mx={4}>
+          <HStack space={2} ml={3} mb={2} >
+            {['All', 'song', 'movies', 'Game', 'news', 'cartoon', 'live'].map(
+              category => (
+                <Button
+                  key={category}
+                  size="sm"
+                  backgroundColor={
+                    activeCategory === category ? 'white' : 'black'
+                  }
+                  borderColor={activeCategory === category ? 'red' : 'yellow'}
+                  borderWidth={1}
+                  _text={{
+                    color: activeCategory === category ? 'black' : 'white',
+                  }}
+                  onPress={() => handleCategoryChange(category)}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </Button>
+              ),
+            )}
+          </HStack>
+        </ScrollView>
       </Box>
 
       <Search visible={searchVisible} onClose={toggleSearchModal} />
@@ -194,7 +198,7 @@ export default function Home() {
       {!selectedItem && (
         <>
           {loadingSkeleton ? (
-            <Example/>
+            <Example />
           ) : (
             <ListItem
               onSelect={onSelect}

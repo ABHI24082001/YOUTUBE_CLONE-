@@ -1,5 +1,5 @@
 import {useNavigation, useRoute} from '@react-navigation/native';
-import {Box, Button, HStack, Icon, Input} from 'native-base';
+import {Box, Button, HStack, Icon, Input, ScrollView} from 'native-base';
 import React, {useCallback, useEffect, useState} from 'react';
 import {
   Dimensions,
@@ -52,7 +52,7 @@ const Offers = () => {
   const fetchYouTubeData = async query => {
     try {
       const response = await fetch(
-        `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=300&q=${query}&type=video&key=AIzaSyAs_PXPiAbIKhcDM8LuJmRpPt56VHMrkwo`,
+        `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=300&q=${query}&type=video&key=AIzaSyC1EbhnoDfooWuTHDlwpw-RIKXSNCuJIK4`,
       );
       const data = await response.json();
       setListData(data.items);
@@ -146,20 +146,28 @@ const Offers = () => {
       </Box>
 
       <Box>
-        <HStack space={2} ml={5} mb={2}>
-          {['All', 'Short', 'unwatched', 'watched', 'Recently uploaded'].map(category => (
-            <Button
-              key={category}
-              size="sm"
-              backgroundColor={activeCategory === category ? 'white' : 'black'}
-              borderColor={activeCategory === category ? 'red' : 'yellow'}
-              borderWidth={1}
-              _text={{color: activeCategory === category ? 'black' : 'white'}}
-              onPress={() => handleCategoryChange(category)}>
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </Button>
-          ))}
-        </HStack>
+        <ScrollView horizontal={true}>
+          <HStack space={2} ml={5} mb={2} mx={4}>
+            {['All', 'Short', 'unwatched', 'watched', 'Recently uploaded', 'New'].map(
+              category => (
+                <Button
+                  key={category}
+                  size="sm"
+                  backgroundColor={
+                    activeCategory === category ? 'white' : 'black'
+                  }
+                  borderColor={activeCategory === category ? 'red' : 'yellow'}
+                  borderWidth={1}
+                  _text={{
+                    color: activeCategory === category ? 'black' : 'white',
+                  }}
+                  onPress={() => handleCategoryChange(category)}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </Button>
+              ),
+            )}
+          </HStack>
+        </ScrollView>
       </Box>
 
       {selectedItem && (

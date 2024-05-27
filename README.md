@@ -1,3 +1,41 @@
+
+
+  ### Setup State Variables and Dependencies:
+
+1.Import necessary dependencies.
+Initialize state variables for managing video data, loading states, and pagination tokens.
+Define the Home Component:
+
+2.Create a component to manage the overall state and render different sections of the app.
+Fetch Data from YouTube API:
+
+ API_USE = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&channelType=any&eventType=completed&maxResults=30&q=fun&type=video&videoType=any&key=['API_KEY']`
+
+ API_KEY = `AIzaSyAs_PXPiAbIKhcDM8LuJmRpPt56VHMrkwo`
+ 
+
+3.Implement a function to fetch video data from the YouTube API.
+Handle initial and paginated data fetching.
+Load More Data for Infinite Scroll:
+
+4.Create a function to fetch more data when the user scrolls to the end of the list.
+Select Video and Handle Layout Changes:
+
+5.Implement functions to handle video selection and adjust layout based on the selection.
+Toggle Search Modal:
+
+6Create a function to toggle the visibility of the search modal.
+Handle Category Change and Refresh:
+
+7Implement functions to handle changes in video categories and refresh the data.
+Render the Component:
+
+8Render the main component, including the header, category buttons, search modal, and video list.
+Ensure the video list supports infinite scroll and displays loading indicators.
+Styles: use NativeBase , Stylesheet
+
+Add styles to ensure the app has a consistent and visually appealing design.
+
 # React Native Typescript Setup
 
 ## Setup Navigation
