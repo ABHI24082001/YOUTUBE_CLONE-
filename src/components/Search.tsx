@@ -85,3 +85,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
+
+function alert(arg0: string) {
+  throw new Error('Function not implemented.');
+}

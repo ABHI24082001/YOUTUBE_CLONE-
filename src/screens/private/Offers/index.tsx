@@ -147,7 +147,7 @@ const Offers = () => {
 
       <Box>
         <HStack space={2} ml={5} mb={2}>
-          {['All', 'Short', 'video', 'unwatched', 'watched', 'Recently uploaded'].map(category => (
+          {['All', 'Short', 'unwatched', 'watched', 'Recently uploaded'].map(category => (
             <Button
               key={category}
               size="sm"

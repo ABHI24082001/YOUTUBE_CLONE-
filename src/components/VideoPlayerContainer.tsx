@@ -168,8 +168,8 @@ function VideoPlayerContainer({
               />
             </Animated.View>
             <View>
-              <Box p={2}>
-                <HStack alignItems={'center'} space={3}>
+              <Box p={2} width={'70%'} mx={3}>
+                <HStack alignItems={'center'} space={2}>
                   <VStack>
                     <Text style={styles.title}>
                       {selectedItem.snippet.title}
@@ -181,11 +181,13 @@ function VideoPlayerContainer({
           </TouchableOpacity>
           <View style={styles.close}>
             <Pressable onPress={onClose} rounded={'full'}>
-              <AppIcon AntDesignName="closecircle" size={30} color={'#000'} />
+              <AppIcon AntDesignName="closesquare" size={30} color={'#000'} />
             </Pressable>
           </View>
         </Animated.View>
       </PanGestureHandler>
+
+      
       <View style={styles.selectedItemDetails}>
         <Box
           p={3}
@@ -221,10 +223,10 @@ function VideoPlayerContainer({
       </View>
       {fetching ? (
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={'#000'} />
         </View>
       ) : (
-        <ListItem onSelect={onSelect} data={listData} />
+        <ListItem onSelect={onSelect} data={listData} loading={false} />
       )}
     </Animated.View>
   );
@@ -240,6 +242,9 @@ const styles = StyleSheet.create({
   },
   fillWidth: {
     width: '100%',
+    backgroundColor: '#fff',
+    borderColor: '#dbdbdb',
+   
   },
   close: {
     position: 'absolute',
