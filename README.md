@@ -271,3 +271,10 @@ apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 ```bash
 cd ios && arch -x86_64 pod install --repo-update && cd ..
 ```
+
+
+here the screenshotes 
+
+![WhatsApp Image 2024-05-27 at 9 33 25 PM](https://github.com/ABHI24082001/YOUTUBE_CLONE-/assets/92623606/0e7a299f-0e32-4653-9301-43e87284f09f)
+![WhatsApp Image 2024-05-27 at 9 33 24 PM (1)](https://github.com/ABHI24082001/YOUTUBE_CLONE-/assets/92623606/88e075a3-45e1-4a09-abb0-585db1369af5)
+![WhatsApp Image 2024-05-27 at 9 33 24 PM](https://github.com/ABHI24082001/YOUTUBE_CLONE-/assets/92623606/dc60324e-8b56-4ccd-814c-58e65a47c867)
